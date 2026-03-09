@@ -1,13 +1,84 @@
----
-layout: presentation
----
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="VIP-Luxer: Sıfır ve 2.el telefonlar ile şarj aksesuarları için premium e-ticaret deneyimi."
+    />
+    <title>VIP-Luxer | Şarj Aksesuar & Telefon</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container header-inner">
+        <div>
+          <h1 class="logo">VIP-Luxer</h1>
+          <p class="subtitle">Premium Elektronik Ticaret</p>
+        </div>
+        <div class="header-actions">
+          <button class="btn btn-light" id="authOpenBtn">Giriş / Kayıt</button>
+          <button class="btn" id="cartToggleBtn">Sepet (<span id="cartCount">0</span>)</button>
+        </div>
+      </div>
+    </header>
 
-{% for post in site.posts reversed %}
-	{% include slide.html %}
-	<div class="page-break"></div>
-{% endfor %}
-{% unless site.simple-slideshow %}
-{% if site.overview %}
-<section id="overview" class="step" {% for attr in site.overview-data %} data-{{attr[0]}}="{{attr[1]}}"{% endfor %}></section>
-{% endif %}
-{% endunless %}
+    <main class="container">
+      <section class="hero">
+        <h2>Sıfır ve 2.El Telefonlar + Şarj Aksesuarları</h2>
+        <p>Güvenli alışveriş, hızlı teslimat, VIP-Luxer kalite güvencesi.</p>
+      </section>
+
+      <section class="toolbar" aria-label="Ürün araçları">
+        <input type="search" id="searchInput" placeholder="Ürün ara..." />
+        <select id="categorySelect">
+          <option value="all">Tüm Kategoriler</option>
+          <option value="new">Sıfır Telefon</option>
+          <option value="used">2.El Telefon</option>
+          <option value="accessory">Aksesuar</option>
+        </select>
+        <select id="sortSelect">
+          <option value="default">Sıralama</option>
+          <option value="priceAsc">Fiyat Artan</option>
+          <option value="priceDesc">Fiyat Azalan</option>
+        </select>
+      </section>
+
+      <section>
+        <h3 class="section-title">Ürünler</h3>
+        <div id="productGrid" class="product-grid"></div>
+      </section>
+
+      <p id="feedbackText" class="feedback" aria-live="polite"></p>
+    </main>
+
+    <aside id="cartDrawer" class="drawer hidden" aria-label="Sepet paneli">
+      <h3>Sepetim</h3>
+      <ul id="cartList"></ul>
+      <p class="drawer-total">Toplam: <span id="cartTotal">0</span> ₺</p>
+      <button class="btn" id="checkoutBtn">Satın Al</button>
+    </aside>
+
+    <dialog id="authDialog">
+      <form id="authForm" method="dialog" class="auth-form">
+        <h3>Giriş / Kayıt</h3>
+        <label for="emailInput">E-posta</label>
+        <input id="emailInput" type="email" required />
+        <label for="passwordInput">Şifre</label>
+        <input id="passwordInput" type="password" minlength="8" required />
+        <div class="auth-actions">
+          <button class="btn" type="submit" data-action="login">Giriş Yap</button>
+          <button class="btn btn-light" type="submit" data-action="register">Kayıt Ol</button>
+          <button class="btn btn-danger" type="button" id="authCloseBtn">Kapat</button>
+        </div>
+      </form>
+    </dialog>
+
+    <footer class="site-footer">
+      <small>© 2026 VIP-Luxer • Güvenli ödeme altyapısı • Mobil uyumlu</small>
+    </footer>
+
+    <script src="app.js" defer></script>
+  </body>
+</html>
