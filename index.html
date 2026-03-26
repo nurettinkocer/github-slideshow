@@ -1,13 +1,367 @@
----
-layout: presentation
----
+<!-- Eğitim amaçlı mobil güvenlik farkındalık demosu. Zararlı işlem yapmaz, veri toplamaz. -->
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Mobil Güvenlik Farkındalık Demosu</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --panel: #121933;
+      --panel-2: #171f3f;
+      --text: #eef3ff;
+      --muted: #9ea9c8;
+      --ok: #48d597;
+      --warn: #ffc857;
+      --risk: #ff7a90;
+      --accent-1: #6f8cff;
+      --accent-2: #9b7bff;
+      --radius-xl: 24px;
+      --radius-lg: 18px;
+      --radius-md: 14px;
+      --shadow: 0 14px 35px rgba(0, 0, 0, .35);
+    }
 
-{% for post in site.posts reversed %}
-	{% include slide.html %}
-	<div class="page-break"></div>
-{% endfor %}
-{% unless site.simple-slideshow %}
-{% if site.overview %}
-<section id="overview" class="step" {% for attr in site.overview-data %} data-{{attr[0]}}="{{attr[1]}}"{% endfor %}></section>
-{% endif %}
-{% endunless %}
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Inter, Helvetica, Arial, sans-serif;
+      background: radial-gradient(circle at 20% 0%, #1d2955 0%, var(--bg) 40%, #070b17 100%);
+      color: var(--text);
+    }
+
+    .app {
+      width: min(520px, 100%);
+      margin: 0 auto;
+      padding: max(18px, env(safe-area-inset-top)) 16px max(22px, env(safe-area-inset-bottom));
+    }
+
+    .card {
+      background: linear-gradient(165deg, rgba(255,255,255,.05), rgba(255,255,255,.015));
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow);
+      padding: 20px;
+      backdrop-filter: blur(8px);
+    }
+
+    .label {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(111, 140, 255, .18);
+      border: 1px solid rgba(111, 140, 255, .32);
+      color: #dbe3ff;
+      font-size: .84rem;
+      margin-bottom: 12px;
+    }
+
+    h1 {
+      margin: 6px 0 10px;
+      font-size: clamp(1.85rem, 4.8vw, 2.35rem);
+      line-height: 1.05;
+      letter-spacing: .2px;
+    }
+
+    p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.45;
+      font-size: .98rem;
+    }
+
+    .mt { margin-top: 14px; }
+
+    .button {
+      appearance: none;
+      border: none;
+      width: 100%;
+      margin-top: 18px;
+      padding: 14px 16px;
+      border-radius: 14px;
+      color: #fff;
+      background: linear-gradient(120deg, var(--accent-1), var(--accent-2));
+      font-weight: 650;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: transform .16s ease, box-shadow .2s ease;
+      box-shadow: 0 10px 25px rgba(111, 140, 255, .32);
+    }
+
+    .button:active { transform: scale(.985); }
+
+    .warning-box {
+      margin-top: 14px;
+      padding: 12px;
+      border-radius: var(--radius-md);
+      background: rgba(255, 122, 144, .13);
+      border: 1px solid rgba(255, 122, 144, .35);
+      color: #ffd6dd;
+      font-size: .92rem;
+      line-height: 1.4;
+    }
+
+    .tip {
+      margin-top: 8px;
+      color: #ffdedd;
+      font-size: .84rem;
+      opacity: .9;
+    }
+
+    .flow { display: none; }
+    .flow.active { display: block; }
+
+    .progress-shell {
+      margin-top: 16px;
+      width: 100%;
+      height: 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.08);
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,.12);
+    }
+
+    .progress {
+      height: 100%;
+      width: 0;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #4ac5ff 0%, #6f8cff 55%, #b07bff 100%);
+      transition: width .32s ease;
+    }
+
+    .step-list {
+      list-style: none;
+      padding: 0;
+      margin: 14px 0 0;
+      display: grid;
+      gap: 8px;
+    }
+
+    .step-item {
+      padding: 12px;
+      border-radius: 12px;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.06);
+      color: #cfd7f1;
+      font-size: .93rem;
+    }
+
+    .step-item.active-step {
+      border-color: rgba(72, 213, 151, .55);
+      color: #e9fff5;
+      background: rgba(72, 213, 151, .12);
+    }
+
+    .result { display: none; }
+    .result.active { display: block; }
+
+    .risk {
+      margin: 16px 0;
+      padding: 14px;
+      border-radius: 16px;
+      background: linear-gradient(140deg, rgba(255,122,144,.18), rgba(255,200,87,.15));
+      border: 1px solid rgba(255,255,255,.1);
+    }
+
+    .risk strong { font-size: 1.25rem; }
+
+    .cards {
+      display: grid;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .mini {
+      background: var(--panel);
+      border-radius: var(--radius-lg);
+      border: 1px solid rgba(255,255,255,.08);
+      padding: 14px;
+    }
+
+    .mini h3 {
+      margin: 0 0 8px;
+      font-size: .98rem;
+    }
+
+    .mini ul {
+      margin: 0;
+      padding-left: 18px;
+      color: #d5ddf8;
+      line-height: 1.45;
+      font-size: .93rem;
+    }
+
+    .platform {
+      margin-top: 12px;
+      font-size: .89rem;
+      color: #d6defa;
+      padding: 10px;
+      border-radius: 12px;
+      background: var(--panel-2);
+      border: 1px solid rgba(255,255,255,.08);
+    }
+
+    .footer-note {
+      margin-top: 16px;
+      text-align: center;
+      color: #9aa8cf;
+      font-size: .83rem;
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <section class="card" id="start-screen">
+      <span class="label">Mobil Güvenlik Farkındalık Demosu</span>
+      <h1>HACKLENDİN</h1>
+      <p>Bu sayfa bir eğitim simülasyonudur. Gerçek tarama, veri toplama, cihaz erişimi veya dışa aktarım işlemi yapmaz.</p>
+
+      <div class="warning-box">
+        telefonuz kilitlendi sofırlanmayana kadar virüs gitmeyecek ve bankahesaplarınıza kadar erişim yapılacaktır 😎.
+        <div class="tip">Yukarıdaki ifade, dolandırıcılık metni örneği olarak gösterilir. Böyle mesajlara güvenmeyin.</div>
+      </div>
+
+      <button class="button" id="start-btn">Kontrolü Başlat</button>
+      <div class="platform" id="platform-label">Algılanan platform: Tespit ediliyor…</div>
+    </section>
+
+    <section class="card flow" id="flow-screen" aria-live="polite">
+      <span class="label">Simülasyon Akışı</span>
+      <h2>Güvenlik kontrol adımları işleniyor</h2>
+      <p id="active-step-text" class="mt">Hazırlanıyor…</p>
+
+      <div class="progress-shell" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+        <div class="progress" id="progress"></div>
+      </div>
+
+      <ul class="step-list" id="step-list"></ul>
+      <div class="platform" id="platform-label-flow">Algılanan platform: -</div>
+    </section>
+
+    <section class="card result" id="result-screen">
+      <span class="label">Sonuç Raporu</span>
+      <h2>Eğitim Sonucu</h2>
+      <p>Bu sonuçlar farkındalık eğitimi içindir; gerçek cihaz analizi değildir.</p>
+
+      <div class="risk">
+        <div>Risk puanı</div>
+        <strong id="risk-score">68 / 100 (Orta)</strong>
+      </div>
+
+      <div class="cards">
+        <article class="mini">
+          <h3>Güvenli alışkanlıklar</h3>
+          <ul>
+            <li>Yalnızca resmi mağazaları kullan.</li>
+            <li>İşletim sistemini güncel tut.</li>
+            <li>Uygulama izinlerini düzenli gözden geçir.</li>
+          </ul>
+        </article>
+
+        <article class="mini">
+          <h3>Dikkat edilmesi gerekenler</h3>
+          <ul>
+            <li>Alan adını dikkatle kontrol et.</li>
+            <li>Bilinmeyen bağlantılara tıklama.</li>
+            <li>Aşırı korkutucu mesajları şüpheli kabul et.</li>
+          </ul>
+        </article>
+
+        <article class="mini">
+          <h3>Önerilen önlemler</h3>
+          <ul>
+            <li>Gereksiz izin verme.</li>
+            <li>İki adımlı doğrulamayı etkinleştir.</li>
+            <li>Güvenlik bildirimlerini ihmal etme.</li>
+          </ul>
+        </article>
+      </div>
+
+      <div class="platform" id="platform-label-result">Algılanan platform: -</div>
+    </section>
+
+    <p class="footer-note">Bu demo yalnızca eğitim amaçlıdır.</p>
+  </main>
+
+  <script>
+    // Eğitim akışı boyunca yalnızca görsel simülasyon yapılır.
+    const steps = [
+      "Bağlantı güvenilirliği kontrol ediliyor",
+      "Uygulama kaynağı riskleri değerlendiriliyor",
+      "Kimlik avı belirtileri inceleniyor",
+      "Güncelleme ve izin hijyeni kontrol listesi hazırlanıyor"
+    ];
+
+    const startBtn = document.getElementById('start-btn');
+    const startScreen = document.getElementById('start-screen');
+    const flowScreen = document.getElementById('flow-screen');
+    const resultScreen = document.getElementById('result-screen');
+    const progressBar = document.getElementById('progress');
+    const progressShell = document.querySelector('.progress-shell');
+    const stepList = document.getElementById('step-list');
+    const activeStepText = document.getElementById('active-step-text');
+
+    const platformLabels = [
+      document.getElementById('platform-label'),
+      document.getElementById('platform-label-flow'),
+      document.getElementById('platform-label-result')
+    ];
+
+    function detectPlatform() {
+      const ua = navigator.userAgent || navigator.vendor || window.opera;
+      if (/android/i.test(ua)) return 'Android';
+      if (/iPhone|iPad|iPod/i.test(ua)) return 'iPhone / iOS';
+      return 'Bilinmiyor';
+    }
+
+    function setPlatformLabel() {
+      const platform = detectPlatform();
+      platformLabels.forEach(el => {
+        el.textContent = `Algılanan platform: ${platform}`;
+      });
+    }
+
+    function renderSteps(activeIndex = -1) {
+      stepList.innerHTML = '';
+      steps.forEach((step, index) => {
+        const li = document.createElement('li');
+        li.className = 'step-item' + (index === activeIndex ? ' active-step' : '');
+        li.textContent = step;
+        stepList.appendChild(li);
+      });
+    }
+
+    async function runSimulation() {
+      startScreen.style.display = 'none';
+      flowScreen.classList.add('active');
+      renderSteps();
+
+      for (let i = 0; i < steps.length; i++) {
+        activeStepText.textContent = steps[i];
+        renderSteps(i);
+        const percent = Math.round(((i + 1) / steps.length) * 100);
+        progressBar.style.width = `${percent}%`;
+        progressShell.setAttribute('aria-valuenow', String(percent));
+        await new Promise(resolve => setTimeout(resolve, 950));
+      }
+
+      flowScreen.classList.remove('active');
+      resultScreen.classList.add('active');
+
+      // Küçük, öğretici varyasyon: tamamen istemci tarafında rastgele puan.
+      const base = 55 + Math.floor(Math.random() * 31);
+      const level = base >= 75 ? 'Yüksek' : base >= 45 ? 'Orta' : 'Düşük';
+      document.getElementById('risk-score').textContent = `${base} / 100 (${level})`;
+    }
+
+    setPlatformLabel();
+    renderSteps();
+    startBtn.addEventListener('click', runSimulation);
+  </script>
+</body>
+</html>
